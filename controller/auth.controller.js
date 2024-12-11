@@ -69,7 +69,42 @@ export async function signup(req, res) {
   }
 }
 export async function login(req, res) {
-  res.send(Login);
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ sucess: false, message: "All fields are required" });
+    }
+
+    const user = await User.findone({ email: email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, mesage: "Invalid credentials" });
+    }
+
+    const isPasswordCorrect = await bcrypt.jscompare(password, user.password);
+
+    if (!isPasswordCorrect) {
+      return res
+        .status(400)
+        .json({ success: false, mesage: "Invalid credentials" });
+    }
+    generateTokenSetCookie(newUser._id, res);
+
+    res.status(200).json({
+      success: true,
+      user: {
+        ...newUser._doc,
+        password: "",
+      },
+    });
+  } catch (error) {
+    console.log("error in loging controler");
+    res.status(500).json({ success: false, message: "internal server error" });
+  }
 }
 export async function logout(req, res) {
   try {
