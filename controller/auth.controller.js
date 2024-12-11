@@ -1,5 +1,6 @@
 import { User } from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
+import { generateTokenSetCookie } from "../utils/generateToken.js";
 
 export async function signup(req, res) {
   try {
@@ -40,7 +41,7 @@ export async function signup(req, res) {
     }
 
     const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = await bcryptjs.hash(passsword, salt);
+    const hashedPassword = await bcryptjs.hash(password, salt);
 
     const PROFILE_PICS = ["/avatar1.png", "/avatar1.png", "/avatar1.png"];
 
@@ -52,6 +53,7 @@ export async function signup(req, res) {
       image: image,
     });
 
+    generateTokenSetCookie(newUser._id, res);
     await newUser.save();
 
     res.status(201).json({
@@ -70,5 +72,11 @@ export async function login(req, res) {
   res.send(Login);
 }
 export async function logout(req, res) {
-  res.send(Logout);
+  try {
+    res.clearCookie("jwt-popcorn");
+    res.status(200).json({ success: true, message: "Logged out succesfully " });
+  } catch (error) {
+    console.log("error in logout controller", error.message);
+    res.status(500).json({ success: false, message: "internal server error" });
+  }
 }
