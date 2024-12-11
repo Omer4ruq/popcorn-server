@@ -1,4 +1,5 @@
 import { User } from "../models/user.model.js";
+import bcryptjs from "bcryptjs";
 
 export async function signup(req, res) {
   try {
@@ -38,12 +39,15 @@ export async function signup(req, res) {
         .json({ success: false, message: "Username already exists" });
     }
 
+    const salt = await bcryptjs.genSalt(10);
+    const hashedPassword = await bcryptjs.hash(passsword, salt);
+
     const PROFILE_PICS = ["/avatar1.png", "/avatar1.png", "/avatar1.png"];
 
     const image = PROFILE_PICS[Math.floor(Math.random() * PROFILE_PICS.length)];
     const newUser = new User({
       email: email,
-      password: password,
+      password: hashedPassword,
       username: username,
       image: image,
     });
@@ -58,7 +62,7 @@ export async function signup(req, res) {
       },
     });
   } catch (error) {
-    console.log("error in sigip controller", error.message);
+    console.log("error in signup controller", error.message);
     res.status(500).json({ success: false, message: "invalid server error" });
   }
 }
