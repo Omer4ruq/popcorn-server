@@ -40,7 +40,7 @@ export async function signup(req, res) {
 
     const PROFILE_PICS = ["/avatar1.png", "/avatar1.png", "/avatar1.png"];
 
-    const image = PROFILE_PICS[Math.random() * PROFILE_PICS.length];
+    const image = PROFILE_PICS[Math.floor(Math.random() * PROFILE_PICS.length)];
     const newUser = new User({
       email: email,
       password: password,
@@ -49,6 +49,14 @@ export async function signup(req, res) {
     });
 
     await newUser.save();
+
+    res.status(201).json({
+      success: true,
+      user: {
+        ...newUser._doc,
+        password: "",
+      },
+    });
   } catch (error) {
     console.log("error in sigip controller", error.message);
     res.status(500).json({ success: false, message: "invalid server error" });
